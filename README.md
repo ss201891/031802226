@@ -13,6 +13,8 @@
 - 从命令行参数给出：输出的答案文件的绝对路径。
 - 我们提供一份样例，可以在群文件里下载，使用方法是：orig.txt是原文，其他orig_add.txt等均为抄袭版论文。
 
+
+
 |PSP2.1|Personal Software Process Stages|预估耗时（分钟）|实际耗时（分钟）|
 |--|--|--|--|
 |Planning|计划|60|--|
@@ -31,3 +33,6 @@
 |Size Measurement|计算工作量|
 |Postmortem & Process Improvement Plan|事后总结, 并提出过程改进计划|
 |--|合计|
+
+> 9.10
+- 学习python的jieba库 
