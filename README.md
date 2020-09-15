@@ -47,3 +47,7 @@
 
 > 9.14
 - tf-idf 两篇文章作为训练 一篇查重 文章一与网上找的语料库训练tfidf 文章三查重
+
+> 9.15
+- [jieba-基于 TF-IDF 算法的关键词抽取](https://blog.csdn.net/Atishoo_13/article/details/86565771?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522160017890219725247450920%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=160017890219725247450920&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_click~default-1-86565771.pc_first_rank_v2_rank_v28&utm_term=jieba+tfidf&spm=1018.2118.3001.4187)
+- 完成实现 剩下函数封装单元测试

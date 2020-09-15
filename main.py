@@ -1,79 +1,76 @@
 #导入所需的模块
-from gensim import corpora,models,similarities
-import jieba
-from collections import defaultdict
+import jieba.analyse
+#用于分词和tfidf
+import numpy as np
+import sys
 
-#打开并读取文件
-f1 = "C:\\Users\\ss\\Desktop\\文本相似度\\sim_0.8\\orig.txt"
-f2 = "C:\\Users\\ss\\Desktop\\文本相似度\\cn_stopwords.txt"
-#停用词库与原文进入tfidf训练
+#读取文件模块
+def read_text():
+    origin_file =sys.argv[1]
+    copy_file =sys.argv[2]
+    #原文本和抄袭文本
+    origin_text = open(origin_file, encoding='UTF-8').read()
+    copy_text = open(copy_file, encoding='UTF-8').read()
+    origin_text.close()
+    copy_text.close()
+    return [origin_text,copy_text]
 
-content1 = open(f1,encoding='UTF-8').read()
-content2 = open(f2,encoding='UTF-8').read()
+#利用jieba.analyse.extract_tags将文本分割完并且得出tfidf值
+def get_cult_tfidf(content):
+    text_tfidfs={}
+    for word, tfidf in jieba.analyse.extract_tags(content, topK=0, withWeight=True):
+        text_tfidfs[word]= tfidf
+    return text_tfidfs
 
-#对文档进行分词
-data1 = jieba.cut(content1)
-data2 = jieba.cut(content2)
+#将两个文本的分词对齐 如{‘第一’：1，“第二”；2，“第三”：3}
+#{“第二”；2，“第三”：3，“第四”；4}
+#对齐为{‘第一’：1，“第二”；2，“第三”：3，“第四”；0}和{第一’：0，“第二”；2，“第三”：3，“第四”；4}
+#并且获得两个字典的权重列表vec_a和vac_b
+def completion(content1,content2):
+    zero=0
+    origin_word_list=[]
+    copy_word_list=[]
+    origin_array={}
+    copy_array={}
+    words_list=[]
+    for item in content1:
+        origin_word_list.append(item)
+    for item in content2:
+        copy_word_list.append(item)
+    words_list=origin_word_list+copy_word_list
+    for word in words_list:
+        if word not in origin_word_list:
+            origin_array[word] = zero
+            copy_array[word] = content2[word]
+        elif word not in copy_word_list:
+            origin_array[word] = content1[word]
+            copy_array[word] = zero
+        else:
+            origin_array[word] = content1[word]
+            copy_array[word] = content2[word]
+    vec_a = [origin_array[item] for item in origin_array]
+    vec_b = [copy_array[item] for item in copy_array]
+    return [vec_a,vec_b]
 
-#整理文档格式，格式为："词语1 词语2 ... 词语n "(词语之间用空格分隔)
-str1 = ""
-for item in data1:
-    str1+=item+" "
-#print(str1)
-str2 = ""
-for item in data2:
-    str2+=item+" "
-#print(str2)
+#计算余弦相似度
+def cosine_similarity(vec_a,vec_b):
+    num = np.dot(vec_a, vec_b)
+    denom = np.linalg.norm(vec_a) * np.linalg.norm(vec_b)
+    cos = num / denom  # 余弦值
+    return cos
 
-#split默认分隔符为空格
-str_all = [str1,str2]
-text = [[word for word in str3.split()]
-        for str3 in str_all]
+#把答案写入文件
+def write_into_text(cos):
+    path= sys.argv[3]
+    fo=open(path,'w',encoding='UTF-8')
+    fo.write(str(cos))
+    fo.close()
 
-#计算词语频率
-frequency = defaultdict(int)
-for i in text:
-    for token in i:
-        frequency[token]+=1
-#过滤词频为3的
-'''
-texts=[[word for word in text if frequency[token]>3]
- for text in texts]
-'''
-#通过语料库建立词典
-dictionary = corpora.Dictionary(text)
-# dictionary.save("D:/reptile/file/dict1.txt")
+if __name__ =="main":
+    [origin_text,copy_text]=read_text()
+    origin_tfidf=get_cult_tfidf(origin_text)
+    copy_tfidf = get_cult_tfidf(copy_text)
+    [vec_a, vec_b]=completion(origin_tfidf,copy_tfidf)
+    cos = cosine_similarity(vec_a, vec_b)
+    write_into_text(cos)
 
-#加载要对比的文档
-f3 = "C:\\Users\\ss\\Desktop\\文本相似度\\sim_0.8\\orig_0.8_dis_1.txt"
-content3 = open(f3,encoding='UTF-8').read()
-data3 = jieba.cut(content3)
-
-str3 = ""
-for item in data3:
-    str3+=item+" "
-new_data = str3
-
-#doc2bow将文件变成一个稀疏矩阵
-new_vec = dictionary.doc2bow(new_data.split())
-
-#对字典进行docbow处理，得到新的语料库
-corpus = [dictionary.doc2bow(j) for j in text]
-
-#将corpus语料库持久化到磁盘中，词句可以删除
-#corpora.MmCorpus.serialize("D:/reptile/file/New_Yuliaoku.mm",corpus)
-
-#将新的语料库通过TfidfModel处理，得到tfidf
-tfidf = models.TfidfModel(corpus)
-print("tfidf :",tfidf)
-#求特征数
-featureNum = len(dictionary.token2id.keys())
-
-#SparseMatrixSimilarity 稀疏矩阵相似度
-index = similarities.SparseMatrixSimilarity(tfidf[corpus],num_features=featureNum)
-print("index: ",index)
-#得到结果
-sim = index[tfidf[new_vec]]
-
-#打印结果
-print(sim[0])
