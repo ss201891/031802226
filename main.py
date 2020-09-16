@@ -13,6 +13,10 @@ def read_text(origin_file, copy_file):
     #     raise ValueError("链接错误")
     # origin_text = open(origin_file, encoding='UTF-8').read()
     # copy_text = open(copy_file, encoding='UTF-8').read()
+    if not os.path.exists(origin_file):
+        raise ValueError('链接错误')
+    if not os.path.exists(copy_file):
+        raise ValueError('链接错误')
     fo1 = open(origin_file, encoding='UTF-8')
     fo2 = open(copy_file, encoding='UTF-8')
 
