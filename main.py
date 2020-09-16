@@ -1,20 +1,22 @@
 # 导入所需的模块
 import sys
-
+import os
 import jieba.analyse
 # 用于分词和 tfidf
 import numpy as np
 
 
 # 读取文件模块
-def read_text():
-    origin_file = sys.argv[1]
-    copy_file = sys.argv[2]
+def read_text(origin_file, copy_file):
     # 原文本和抄袭文本
+    # if (fo1 == None or fo2 == None):
+    #     raise ValueError("链接错误")
     # origin_text = open(origin_file, encoding='UTF-8').read()
     # copy_text = open(copy_file, encoding='UTF-8').read()
     fo1 = open(origin_file, encoding='UTF-8')
     fo2 = open(copy_file, encoding='UTF-8')
+
+    # 文件错误 读不到 无效链接
     origin_text = fo1.read()
     copy_text = fo2.read()
     fo1.close()
@@ -27,6 +29,8 @@ def get_cult_tfidf(content):
     text_tfidfs = {}
     for word, tfidf in jieba.analyse.extract_tags(content, topK=0, withWeight=True):
         text_tfidfs[word] = tfidf
+    if len(text_tfidfs) == 0:
+        raise ValueError("无效文本")
     return text_tfidfs
 
 
@@ -76,12 +80,24 @@ def write_into_text(cos, path):
     fo.close()
 
 
-if __name__ == '__main__':
-    [origin_text, copy_text] = read_text()
+# 调用各个函数求得答案
+def get_similar(origin_file, copy_file):
+    [origin_text, copy_text] = read_text(origin_file, copy_file)
     origin_tfidf = get_cult_tfidf(origin_text)
     copy_tfidf = get_cult_tfidf(copy_text)
     # print(origin_tfidf, copy_tfidf)
     [vec_a, vec_b] = completion(origin_tfidf, copy_tfidf)
     cos = cosine_similarity(vec_a, vec_b)
+    return cos
+
+
+if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        raise ValueError('参数缺失')
+    origin_file = sys.argv[1]
+    copy_file = sys.argv[2]
+    cos = get_similar(origin_file, copy_file)
+    if cos > 0.99:
+        cos = 1
     path = sys.argv[3]
     write_into_text(cos, path)
