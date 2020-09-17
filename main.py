@@ -9,18 +9,12 @@ import numpy as np
 # 读取文件模块
 def read_text(origin_file, copy_file):
     # 原文本和抄袭文本
-    # if (fo1 == None or fo2 == None):
-    #     raise ValueError("链接错误")
-    # origin_text = open(origin_file, encoding='UTF-8').read()
-    # copy_text = open(copy_file, encoding='UTF-8').read()
     if not os.path.exists(origin_file):
         raise ValueError('链接错误')
     if not os.path.exists(copy_file):
         raise ValueError('链接错误')
     fo1 = open(origin_file, encoding='UTF-8')
     fo2 = open(copy_file, encoding='UTF-8')
-
-    # 文件错误 读不到 无效链接
     origin_text = fo1.read()
     copy_text = fo2.read()
     fo1.close()
